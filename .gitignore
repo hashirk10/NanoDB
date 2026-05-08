@@ -1,0 +1,27 @@
+# Compiled binaries
+nanodb
+test_runner
+*.exe
+*.o
+*.out
+
+# Raw TPC-H data (large files, not to be committed)
+data/
+*.tbl
+
+# Execution logs (generated at runtime)
+nanodb_execution.log
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+build/
+cmake_build/
+CMakeFiles/
+CMakeCache.txt
