@@ -1,0 +1,89 @@
+# ============================================================
+# NanoDB Workload File — 50 Queries (TPC-H Schema)
+# CS-4002 Applied Programming | MS-CS Spring 2026
+# Format: plain SQL-like commands; ADMIN: prefix = priority 0
+# ============================================================
+
+# ── Section 1: Simple Inserts (customer) ──────────────────
+INSERT customer 90001 "Alpha Corp" "1 North Ave" 5 "800-555-0001" 4200.50 "BUILDING" "Premium customer"
+INSERT customer 90002 "Beta Ltd" "2 South St" 10 "800-555-0002" 8750.00 "AUTOMOBILE" "High value"
+INSERT customer 90003 "Gamma Inc" "3 East Rd" 15 "800-555-0003" 1250.75 "MACHINERY" "Regular customer"
+INSERT customer 90004 "Delta Co" "4 West Blvd" 20 "800-555-0004" 6300.00 "HOUSEHOLD" "VIP account"
+INSERT customer 90005 "Epsilon LLC" "5 Central Ave" 25 "800-555-0005" 9999.99 "FURNITURE" "Enterprise client"
+
+# ── Section 2: Simple Inserts (orders) ────────────────────
+INSERT orders 80001 90001 "O" 75000.00 "1998-01-15" "1-URGENT" "Clerk001" 0 "Rush order"
+INSERT orders 80002 90002 "F" 125000.50 "1998-03-20" "2-HIGH" "Clerk002" 0 "High priority"
+INSERT orders 80003 90003 "O" 45000.00 "1998-05-10" "3-MEDIUM" "Clerk003" 0 "Standard"
+INSERT orders 80004 90004 "P" 210000.00 "1998-07-22" "1-URGENT" "Clerk004" 0 "Pending large order"
+INSERT orders 80005 90005 "O" 88000.00 "1998-09-01" "2-HIGH" "Clerk005" 0 "Scheduled"
+
+# ── Section 3: Simple Inserts (lineitem) ──────────────────
+INSERT lineitem 80001 1001 501 1 50.0 75000.00 0.05 0.08 "N" "O" "1998-02-01"
+INSERT lineitem 80002 1002 502 1 120.0 125000.50 0.10 0.08 "R" "F" "1998-04-01"
+INSERT lineitem 80003 1003 503 1 30.0 45000.00 0.02 0.08 "N" "O" "1998-06-01"
+INSERT lineitem 80004 1004 504 1 200.0 210000.00 0.08 0.08 "N" "P" "1998-08-01"
+INSERT lineitem 80005 1005 505 1 80.0 88000.00 0.04 0.08 "N" "O" "1998-10-01"
+
+# ── Section 4: Simple SELECT queries ─────────────────────
+SELECT customer
+SELECT orders
+SELECT lineitem
+SELECT customer WHERE c_nationkey == 5
+SELECT orders WHERE o_orderstatus == "O"
+
+# ── Section 5: WHERE conditions ──────────────────────────
+SELECT customer WHERE c_acctbal > 5000
+SELECT customer WHERE c_acctbal < 2000
+SELECT customer WHERE c_mktsegment == "AUTOMOBILE"
+SELECT customer WHERE c_mktsegment == "BUILDING"
+SELECT orders WHERE o_totalprice > 100000
+
+# ── Section 6: Multi-condition WHERE ─────────────────────
+SELECT customer WHERE c_acctbal > 3000 AND c_nationkey == 10
+SELECT orders WHERE o_orderstatus == "O" AND o_totalprice > 50000
+SELECT customer WHERE c_custkey == 90001
+SELECT orders WHERE o_orderkey == 80002
+SELECT lineitem WHERE l_discount > 0.05
+
+# ── Section 7: OR conditions ─────────────────────────────
+SELECT customer WHERE c_mktsegment == "BUILDING" OR c_mktsegment == "MACHINERY"
+SELECT orders WHERE o_orderstatus == "F" OR o_orderstatus == "P"
+SELECT lineitem WHERE l_returnflag == "R" OR l_returnflag == "A"
+SELECT customer WHERE c_nationkey == 5 OR c_nationkey == 10
+SELECT customer WHERE c_acctbal < 1500 OR c_acctbal > 9000
+
+# ── Section 8: Complex nested conditions ─────────────────
+SELECT customer WHERE (c_acctbal > 5000 AND c_mktsegment == "BUILDING") OR c_nationkey == 15
+SELECT customer WHERE (c_acctbal > 4000 AND c_nationkey == 20) OR c_mktsegment == "HOUSEHOLD"
+SELECT orders WHERE (o_totalprice > 80000 AND o_orderstatus == "O") OR o_shippriority == 1
+SELECT customer WHERE (c_nationkey > 10 AND c_acctbal > 3000) OR c_mktsegment == "FURNITURE"
+SELECT orders WHERE (o_custkey == 90002 AND o_totalprice > 100000) OR o_orderstatus == "P"
+
+# ── Section 9: Sequential and Index Scans ────────────────
+SEQUENTIAL_SCAN customer WHERE c_custkey == 90001
+INDEX_SCAN customer WHERE c_custkey == 90001
+SEQUENTIAL_SCAN orders WHERE o_orderkey == 80003
+INDEX_SCAN orders WHERE o_orderkey == 80003
+SEQUENTIAL_SCAN lineitem WHERE l_orderkey == 80001
+
+# ── Section 10: JOIN operations ──────────────────────────
+JOIN customer orders
+JOIN orders lineitem
+JOIN customer orders lineitem
+SELECT customer JOIN orders ON c_custkey = o_custkey WHERE c_mktsegment == "BUILDING"
+JOIN customer orders lineitem
+
+# ── Section 11: UPDATE operations ────────────────────────
+ADMIN:UPDATE customer SET c_acctbal = 9999.99 WHERE c_custkey == 90001
+UPDATE orders SET o_orderstatus = "F" WHERE o_orderkey == 80003
+UPDATE customer SET c_mktsegment = "BUILDING" WHERE c_custkey == 90003
+ADMIN:UPDATE orders SET o_totalprice = 250000.00 WHERE o_orderkey == 80004
+UPDATE customer SET c_nationkey = 7 WHERE c_custkey == 90002
+
+# ── Section 12: Arithmetic in WHERE (Test Case F) ────────
+SELECT orders WHERE ((o_totalprice * 1.5) > 100000 AND (o_custkey % 2 == 0)) OR (o_orderstatus != "O")
+SELECT lineitem WHERE (l_extendedprice * l_discount) > 5000
+SELECT orders WHERE (o_totalprice * 1.2) > 150000
+SELECT customer WHERE (c_acctbal * 2) > 10000
+SELECT lineitem WHERE (l_quantity * 1.0) > 100
